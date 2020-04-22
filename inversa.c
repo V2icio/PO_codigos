@@ -7,30 +7,45 @@ int DIMENSION;
 void incluiMatriz(int linha, int coluna, char *entrada, int*** matriz){
     int lenght = 0;
     int barPos = -1;
+    int signalFlag = 1;
 
     while(entrada[lenght] != '\0'){
         if(entrada[lenght] == '/'){
             barPos = lenght;
-        }        
+        }    
         lenght++;
     }
 
     if(barPos == -1){
         int j = 0;
         for(int i = lenght-1; i>=0; i--, j++){
+            if(entrada[i] == '-'){
+                signalFlag = signalFlag * -1;
+                continue;
+            }
             matriz[linha][coluna][0] +=  (entrada[i] - '0') * pow(10,j);
         }
     } else {
         int j = 0;
         for(int i = barPos-1; i>=0; i--, j++){
+            if(entrada[i] == '-'){
+                signalFlag = signalFlag * -1;
+                continue;
+            }
             matriz[linha][coluna][0] +=  (entrada[i] - '0') * pow(10,j);
         }
         j=0;
         matriz[linha][coluna][1] = 0;
         for(int i = lenght-1; i>barPos; i--, j++){
+            if(entrada[i] == '-'){
+                signalFlag = signalFlag * -1;
+                continue;
+            }
             matriz[linha][coluna][1] +=  (entrada[i] - '0') * pow(10,j);
         }
     }
+
+    matriz[linha][coluna][0] = matriz[linha][coluna][0] * signalFlag;
 }
 
 
@@ -217,6 +232,10 @@ void calculaInversa(int dim, int*** matriz){
                 mdc = gcd(matrizEsquerda[i][j][0], matrizEsquerda[i][j][1]);
                 matrizEsquerda[i][j][0] = matrizEsquerda[i][j][0]/mdc;
                 matrizEsquerda[i][j][1] = matrizEsquerda[i][j][1]/mdc;
+                if(matrizEsquerda[i][j][1] < 0){
+                    matrizEsquerda[i][j][0] = matrizEsquerda[i][j][0] * -1;
+                    matrizEsquerda[i][j][1] = matrizEsquerda[i][j][1] * -1;
+                }
             }
             matrizDireita[i][j][0] = matrizDireita[i][j][0] * fator[1];
             matrizDireita[i][j][1] = matrizDireita[i][j][1] * fator[0];
@@ -224,6 +243,10 @@ void calculaInversa(int dim, int*** matriz){
             mdc = gcd(matrizDireita[i][j][0], matrizDireita[i][j][1]);
             matrizDireita[i][j][0] = matrizDireita[i][j][0]/mdc;
             matrizDireita[i][j][1] = matrizDireita[i][j][1]/mdc;
+            if(matrizDireita[i][j][1] < 0){
+                matrizDireita[i][j][0] = matrizDireita[i][j][0] * -1;
+                matrizDireita[i][j][1] = matrizDireita[i][j][1] * -1;
+            }
         }
         
 
@@ -300,6 +323,7 @@ void calculaInversa(int dim, int*** matriz){
 
                 matrizEsquerda[j][k][0] = result[0];
                 matrizEsquerda[j][k][1] = result[1];
+                free(result);
             }
 
             for (int k = 0; k < dim; k++){
@@ -308,6 +332,7 @@ void calculaInversa(int dim, int*** matriz){
 
                 matrizDireita[j][k][0] = result[0];
                 matrizDireita[j][k][1] = result[1];
+                free(result);
             }
 
             printf("----------------\n");
@@ -318,9 +343,7 @@ void calculaInversa(int dim, int*** matriz){
             printf("\n\n");
       
         }
-        
     }
-
 }
 
 int main() {

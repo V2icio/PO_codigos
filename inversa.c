@@ -280,8 +280,46 @@ void calculaInversa(int dim, int*** matriz){
     imprimeMatriz(matrizDireita,dim);
     printf("\n\n");
 
+
+    printf("Até aqui surpreendentemente funciona\n");
     //Até aqui surpreendentemente funciona com uma matriz 3x3
 
+
+    for(int i = dim-1; i>=0; i--){
+        int fator[2];
+        
+        int *result;
+        
+        for(int j = i-1; j>=0; j--){
+            fator[0] = matrizEsquerda[j][i][0];
+            fator[1] = matrizEsquerda[j][i][1];
+
+            for (int k = i; k < dim; k++){
+                result = operaMatriz(matrizEsquerda[j][k][0],matrizEsquerda[j][k][1], 
+                fator[0]*matrizEsquerda[i][k][0], fator[1]*matrizEsquerda[i][k][1], -1);
+
+                matrizEsquerda[j][k][0] = result[0];
+                matrizEsquerda[j][k][1] = result[1];
+            }
+
+            for (int k = 0; k < dim; k++){
+                result = operaMatriz(matrizDireita[j][k][0],matrizDireita[j][k][1], 
+                fator[0]*matrizDireita[i][k][0], fator[1]*matrizDireita[i][k][1], -1);
+
+                matrizDireita[j][k][0] = result[0];
+                matrizDireita[j][k][1] = result[1];
+            }
+
+            printf("----------------\n");
+            printf("\n\n");
+            imprimeMatriz(matrizEsquerda, dim);
+            printf("\n\n");
+            imprimeMatriz(matrizDireita,dim);
+            printf("\n\n");
+      
+        }
+        
+    }
 
 }
 
@@ -317,6 +355,7 @@ int main() {
     imprimeMatriz(matriz, dim);
 
     int *determinante;
+/*
     determinante = calculaDeterminante(dim,matriz);
 
     printf("\nO determinante da matriz e: %d/%d", determinante[0], determinante[1]);
@@ -325,8 +364,10 @@ int main() {
         calculaInversa(dim, matriz);
     } else {
         printf("Como o determinante = 0, a matriz nao possui inversa\n");
-    }
+    }*/
 
+
+    calculaInversa(dim, matriz);
 
     
     free(determinante);

@@ -183,7 +183,7 @@ int* calculaDeterminante(int dim, int*** matriz){
     }
 }
 
-void calculaInversa(int dim, int*** matriz){
+int*** calculaInversa(int dim, int*** matriz){
     //alocar as duas matrizes, copiar na matriz esquerda a matriz original e na direita a identidade
     int ***matrizEsquerda = (int ***)malloc(dim * sizeof(int**));
     for(int i = 0; i < dim; i++) {
@@ -211,11 +211,6 @@ void calculaInversa(int dim, int*** matriz){
             matrizDireita[i][j][1] = 1;
         }
     }
-    printf("\n\n");
-    imprimeMatriz(matrizEsquerda, dim);
-    printf("\n\n");
-    imprimeMatriz(matrizDireita,dim);
-    printf("\n\n");
 
     for (int i = 0; i < dim; i++){
         //divido a primeira linha pra deixar com valor 1
@@ -263,48 +258,23 @@ void calculaInversa(int dim, int*** matriz){
                     result = operaMatriz(matrizEsquerda[j][k][0], matrizEsquerda[j][k][1],
                     fator[0]*matrizEsquerda[i][k][0], fator[1]*matrizEsquerda[i][k][1], -1);
 
-                    printf("%d/%d - %d/%d = %d/%d\n\n",matrizEsquerda[j][k][0], matrizEsquerda[j][k][1], 
-                    fator[0]*matrizEsquerda[i][k][0],fator[1]*matrizEsquerda[i][k][1] , result[0], result[1] );
-
                     matrizEsquerda[j][k][0] = result[0];
                     matrizEsquerda[j][k][1] = result[1];
 
                     free(result);
                 }
                 
-
                 result = operaMatriz(matrizDireita[j][k][0], matrizDireita[j][k][1],
                 fator[0]*matrizDireita[i][k][0], fator[1]*matrizDireita[i][k][1], -1);
-
-                printf("%d/%d - %d/%d = %d/%d\n\n",matrizDireita[j][k][0], matrizDireita[j][k][1],
-                fator[0]*matrizDireita[i][k][0], fator[1]*matrizDireita[i][k][1], result[0], result[1] );
                 
                 matrizDireita[j][k][0] = result[0];
                 matrizDireita[j][k][1] = result[1];
                 
                 free(result);
             }
-
-                printf("----------------\n");
-                printf("\n\n");
-                imprimeMatriz(matrizEsquerda, dim);
-                printf("\n\n");
-                imprimeMatriz(matrizDireita,dim);
-                printf("\n\n");
-
-        }
-        
+        }  
     }
-    
-    printf("----------------\n");
-    printf("\n\n");
-    imprimeMatriz(matrizEsquerda, dim);
-    printf("\n\n");
-    imprimeMatriz(matrizDireita,dim);
-    printf("\n\n");
 
-
-    printf("Até aqui surpreendentemente funciona\n");
     //Até aqui surpreendentemente funciona com uma matriz 3x3
 
 
@@ -334,16 +304,11 @@ void calculaInversa(int dim, int*** matriz){
                 matrizDireita[j][k][1] = result[1];
                 free(result);
             }
-
-            printf("----------------\n");
-            printf("\n\n");
-            imprimeMatriz(matrizEsquerda, dim);
-            printf("\n\n");
-            imprimeMatriz(matrizDireita,dim);
-            printf("\n\n");
-      
         }
     }
+
+    free(matrizEsquerda);
+    return matrizDireita;
 }
 
 int main() {
@@ -354,6 +319,8 @@ int main() {
     printf("dimensao: %d",dim);
     DIMENSION = dim;
 
+    int ***matrizInversa;
+
     int ***matriz = (int ***)malloc(dim * sizeof(int**));
     for(int i = 0; i < dim; i++) {
         matriz[i] = (int **)malloc(dim * sizeof(int*));
@@ -362,6 +329,8 @@ int main() {
             matriz[i][j] = (int*)malloc(2 * sizeof(int));
         }
     }
+
+    
 
     printf("\n\nEntre com a matriz\n");
 
@@ -374,7 +343,7 @@ int main() {
             incluiMatriz(i, j, sAux, matriz);
         }
     }
-    printf("matriz:\n");
+    printf("\nMatriz:\n");
     imprimeMatriz(matriz, dim);
 
     int *determinante;
@@ -390,7 +359,10 @@ int main() {
     }*/
 
 
-    calculaInversa(dim, matriz);
+    matrizInversa = calculaInversa(dim, matriz);
+
+    printf("\nMatriz inversa:\n");
+    imprimeMatriz(matrizInversa, dim);
 
     
     free(determinante);

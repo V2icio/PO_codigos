@@ -213,6 +213,11 @@ int*** calculaInversa(int dim, int*** matriz){
     }
 
     for (int i = 0; i < dim; i++){
+        //TODO: Se o elemento pivo for 0, trocar essa linha com outra linha.
+        
+
+
+
         //divido a primeira linha pra deixar com valor 1
         int fator[2];
         fator[0] = matrizEsquerda[i][i][0] == 0 ? 1 : matrizEsquerda[i][i][0]; 
@@ -227,7 +232,9 @@ int*** calculaInversa(int dim, int*** matriz){
                 mdc = gcd(matrizEsquerda[i][j][0], matrizEsquerda[i][j][1]);
                 matrizEsquerda[i][j][0] = matrizEsquerda[i][j][0]/mdc;
                 matrizEsquerda[i][j][1] = matrizEsquerda[i][j][1]/mdc;
-                if(matrizEsquerda[i][j][1] < 0){
+                
+                //denominador negativo multiplica por -1 a fração.
+                if(matrizEsquerda[i][j][1] < 0){ 
                     matrizEsquerda[i][j][0] = matrizEsquerda[i][j][0] * -1;
                     matrizEsquerda[i][j][1] = matrizEsquerda[i][j][1] * -1;
                 }

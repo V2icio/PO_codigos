@@ -4,6 +4,8 @@
 
 int DIMENSION;
 
+int* teoremaLaplace(int , int*** );
+
 void incluiMatriz(int linha, int coluna, char *entrada, int*** matriz){
     int lenght = 0;
     int barPos = -1;
@@ -176,12 +178,65 @@ int* regraDeSarrus(int dim, int*** matriz){
 
 int* calculaDeterminante(int dim, int*** matriz){
     if(dim > 3){
-        printf("La place não implementado\n");
-        //Regra de Chio é mais fácil implementar
-        return NULL;
+        //printf("La place não implementado\n");
+        return teoremaLaplace(dim, matriz);
     } else {
         return regraDeSarrus(dim,matriz);
     }
+}
+
+int* teoremaLaplace(int dim, int*** matriz){
+    /*cofator = determinante da matriz de ordem n-1 eliminando 
+    a linha e a coluna do elemento selecionado*/
+    int *determinante;
+    determinante = (int*) malloc(2 * sizeof(int));
+    determinante[0] = 0;
+    determinante[1] = 1;
+    
+    int ***matrizAux;
+
+    //para cada elemento da primeira linha.
+    for(int i = 0; i<dim; i++){
+        //matrizAux = matriz ordem n -1.
+        matrizAux = (int ***)malloc(dim-1 * sizeof(int**));
+        for(int j = 0; j < dim-1; j++) {
+            matrizAux[j] = (int **)malloc(dim-1 * sizeof(int*));
+            for (int k = 0; k < dim-1; k++)
+            {
+                matrizAux[j][k] = (int*)malloc(2 * sizeof(int));
+            }
+        }
+        //copiar os valores sem a linha 0 e coluna i.
+        for(int j = 0, k=0; j<dim; j++, k++){
+            if(j == i){
+                j++;
+                if(j==dim){
+                    break;
+                }
+            }
+            for(int l=1; l<dim; l++){
+                matrizAux[l-1][k][0] = matriz[l][j][0];
+                matrizAux[l-1][k][1] = matriz[l][j][1];
+            }
+        }
+
+        //determinante = determinante + elemento(0,i)*(-1)^(i+1+j+1) * det(matrizAux)
+        int *a;
+        a = calculaDeterminante(dim-1, matrizAux);
+
+        a[0] = a[0] * pow(-1,i+1+1);
+        
+        a[0] = a[0] * matriz[0][i][0];
+        a[1] = a[1] * matriz[0][i][1];
+
+        int *liberar;
+        liberar = determinante;
+        determinante = operaMatriz(determinante[0],determinante[1], a[0], a[1], 1);
+
+        free(liberar);
+        free(matrizAux);  
+   }
+   return determinante;
 }
 
 int*** calculaInversa(int dim, int*** matriz){
@@ -214,8 +269,7 @@ int*** calculaInversa(int dim, int*** matriz){
     }
 
     for (int i = 0; i < dim; i++){
-        //posição 0 = númerador
-        //posição 1 = denominador
+        //posição 0 = númerador  --  posição 1 = denominador
 
         //Se o elemento pivo for 0, trocar essa linha com outra linha.
         if(matrizEsquerda[i][i][0] == 0){
@@ -281,7 +335,6 @@ int*** calculaInversa(int dim, int*** matriz){
             }
         }
         
-
         for (int j = i+1; j < dim; j++){
             //zerar as outras linhas abaixo dessa
             //j = linha
@@ -312,9 +365,6 @@ int*** calculaInversa(int dim, int*** matriz){
         }  
     }
 
-    //Até aqui surpreendentemente funciona com uma matriz 3x3
-
-
     for(int i = dim-1; i>=0; i--){
         int fator[2];
         
@@ -344,11 +394,7 @@ int*** calculaInversa(int dim, int*** matriz){
         }
     }
 
-    imprimeMatriz(matrizEsquerda, dim);
-
     free(matrizEsquerda);
-   
-
     return matrizDireita;
 }
 
@@ -386,26 +432,20 @@ int main() {
     imprimeMatriz(matriz, dim);
 
     int *determinante;
-/*
+
     determinante = calculaDeterminante(dim,matriz);
 
-    printf("\nO determinante da matriz e: %d/%d", determinante[0], determinante[1]);
+    printf("\nO determinante da matriz e: %d/%d\n", determinante[0], determinante[1]);
 
     if(determinante[0] != 0){
-        calculaInversa(dim, matriz);
+        matrizInversa = calculaInversa(dim, matriz);
+        printf("\nMatriz inversa:\n");
+        imprimeMatriz(matrizInversa, dim);
     } else {
         printf("Como o determinante = 0, a matriz nao possui inversa\n");
-    }*/
+    }
 
-
-    matrizInversa = calculaInversa(dim, matriz);
-
-    printf("\nMatriz inversa:\n");
-    imprimeMatriz(matrizInversa, dim);
-
-    
     free(determinante);
-
 
     return 0;
 ;}

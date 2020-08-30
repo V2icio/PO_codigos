@@ -75,8 +75,8 @@ int lcm(int a, int b){      // Minimo multiplo comum
 }
 
 
+//Variavel fator define a operação, 1:soma    -1:subtração
 int* operaMatriz(int numeradorA, int denominadorA, int numeradorB, int denominadorB, int fator){
-    //Variavel fator define a operação, 1:soma    -1:subtração
     int *result;
     result = (int*) malloc(2 * sizeof(int));
 
@@ -177,6 +177,7 @@ int* regraDeSarrus(int dim, int*** matriz){
 int* calculaDeterminante(int dim, int*** matriz){
     if(dim > 3){
         printf("La place não implementado\n");
+        //Regra de Chio é mais fácil implementar
         return NULL;
     } else {
         return regraDeSarrus(dim,matriz);
@@ -213,10 +214,39 @@ int*** calculaInversa(int dim, int*** matriz){
     }
 
     for (int i = 0; i < dim; i++){
-        //TODO: Se o elemento pivo for 0, trocar essa linha com outra linha.
-        
+        //posição 0 = númerador
+        //posição 1 = denominador
 
+        //Se o elemento pivo for 0, trocar essa linha com outra linha.
+        if(matrizEsquerda[i][i][0] == 0){
+            for(int j=i+1; j<dim; j++){
+                if(matrizEsquerda[j][i][0] != 0){
+                    //troca as linhas
+                    int aux;
+                    for(int k = 0; k<dim; k++){
+                        aux = matrizEsquerda[j][k][0];
+                        matrizEsquerda[j][k][0] = matrizEsquerda[i][k][0];
+                        matrizEsquerda[i][k][0] = aux;
 
+                        aux = matrizEsquerda[j][k][1];
+                        matrizEsquerda[j][k][1] = matrizEsquerda[i][k][1];
+                        matrizEsquerda[i][k][1] = aux;
+
+                        aux = matrizDireita[j][k][0];
+                        matrizDireita[j][k][0] = matrizDireita[i][k][0];
+                        matrizDireita[i][k][0] = aux;
+
+                        aux = matrizDireita[j][k][1];
+                        matrizDireita[j][k][1] = matrizDireita[i][k][1];
+                        matrizDireita[i][k][1] = aux;
+                    }
+                    break;
+                }
+                if(j = dim-1){
+                    printf("Erro nos pivos: pivo != 0 não encontrado.");
+                }
+            }
+        }
 
         //divido a primeira linha pra deixar com valor 1
         int fator[2];
@@ -314,7 +344,11 @@ int*** calculaInversa(int dim, int*** matriz){
         }
     }
 
+    imprimeMatriz(matrizEsquerda, dim);
+
     free(matrizEsquerda);
+   
+
     return matrizDireita;
 }
 
@@ -336,8 +370,6 @@ int main() {
             matriz[i][j] = (int*)malloc(2 * sizeof(int));
         }
     }
-
-    
 
     printf("\n\nEntre com a matriz\n");
 

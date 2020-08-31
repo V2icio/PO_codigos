@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-int DIMENSION;
-
 int* teoremaLaplace(int , int*** );
 
 void incluiMatriz(int linha, int coluna, char *entrada, int*** matriz){
@@ -404,7 +402,6 @@ int main() {
     printf("Entre com a dimensao da matriz quadrada\n");
     scanf("%d",&dim);
     printf("dimensao: %d",dim);
-    DIMENSION = dim;
 
     int ***matrizInversa;
 

@@ -18,7 +18,107 @@ void addFolgaArtificial(int i, int j, int valor, int*** matriz, int nrRestricoes
         matriz[k][j][1] = 1;   
     }    
 }
+void preTratamentoSimplex(int*** matriz, int*** sinalVetorB, int*** matrizFolga, 
+                          int*** matrizArtificial, int nrRestricoes, int nrVariaveis){
+    int contFolga = 0, contArtificial = 0;
+    int aux;
+    for(int i=0; i<nrRestricoes; i++){
+        if(sinalVetorB[i][0][0] == 2){      //se for =
+            //variavel artificial
+            addFolgaArtificial(i, contArtificial, 1, matrizArtificial, nrRestricoes);
+            contArtificial++;
+        } else if(sinalVetorB[i][0][0] == 0){   //se for <=
+            if(sinalVetorB[i][1][0] < 0){
+                //multiplicar a linha por -1
+                multiplicaLinha(i, matriz, sinalVetorB, nrVariaveis);
 
+                //variavel de folga
+                aux = sinalVetorB[i][0][0] == 0 ? 1 : -1;
+                addFolgaArtificial(i, contFolga, aux, matrizFolga, nrRestricoes);
+                contFolga++;
+
+                //variavel artificial
+                addFolgaArtificial(i, contArtificial, 1,matrizArtificial, nrRestricoes);
+                contArtificial++;
+            }else{
+                //variavel de folga
+                aux = sinalVetorB[i][0][0] == 0 ? 1 : -1;
+                addFolgaArtificial(i, contFolga, aux, matrizFolga, nrRestricoes);
+                contFolga++;
+            }
+        } else if(sinalVetorB[i][0][0] == 1){   //se for >=
+            if(sinalVetorB[i][1][0] <= 0){
+                //multiplicar a linha por -1
+                multiplicaLinha(i, matriz, sinalVetorB,nrVariaveis);
+
+                //variavel de folga
+                aux = sinalVetorB[i][0][0] == 0 ? 1 : -1;
+                addFolgaArtificial(i, contFolga, aux, matrizFolga, nrRestricoes);
+                contFolga++;
+            } else {
+                //variavel de folga
+                aux = sinalVetorB[i][0][0] == 0 ? 1 : -1;
+                addFolgaArtificial(i, contFolga, aux, matrizFolga, nrRestricoes);
+                contFolga++;
+
+                //variavel artificial
+                addFolgaArtificial(i, contArtificial, 1, matrizArtificial, nrRestricoes);
+                contArtificial++;
+            }
+        }
+    }
+    //se tiver variaveis arificiais precisa fase 1
+    //se b > 0 e sinal = '<'  ->  só folga
+    //se b > 0 e sinal = '>'  ->  folga + artificial
+    //se b < 0 e sinal = '<'  ->  multiplicar por -1 + folga + artificial
+    //se b < 0 e sinal = '>'  ->  multiplicar por -1 + folga
+    //sinal = '='  ->  artificial
+}
+
+void inicializaBase(int *basicas, int *naoBasicas, int nrVariaveis, int nrRestricoes, 
+                    int nrFolga, int nrArtificiais, int*** matrizFolga, int*** matrizArtificial){
+
+    int contBasicas = 0, contNaoBasicas = 0, contArtificial = 0;
+
+    for (int i = 0; i < nrVariaveis; i++){
+        naoBasicas[contNaoBasicas] = i;
+        contNaoBasicas++;  
+    }
+
+    for(int i = 0, j = 0; i< nrFolga; i++, j++){
+        if(matrizFolga[j][i][0] == 1){
+            basicas[contBasicas] = nrVariaveis + i;
+            contBasicas++;
+        } else if(matrizFolga[j][i][0] == -1){
+            naoBasicas[contNaoBasicas] = nrVariaveis + i;
+            naoBasicas++;
+
+            basicas[contBasicas] = contArtificial + nrVariaveis + nrFolga;
+            contArtificial++;
+            contBasicas++;
+        } else{
+            basicas[contBasicas] = contArtificial + nrVariaveis + nrFolga;
+            contArtificial++;
+            contBasicas++;
+            i--;
+        }
+    }
+
+    for(int i = contArtificial; i < nrArtificiais; i++){
+        basicas[contBasicas] = contArtificial + nrVariaveis + nrFolga;
+        contArtificial++;
+        contBasicas++;
+    }
+}
+
+void faseI(){
+
+}
+
+
+void faseII(){
+    
+}
 
 int main(){
     int nrVariaveis, nrRestricoes;
@@ -120,59 +220,17 @@ int main(){
         }
     }
 
-    int contFolga = 0, contArtificial = 0;
-    int aux;
-    for(int i=0; i<nrRestricoes; i++){
-        if(sinalVetorB[i][0][0] == 2){      //se for =
-            //variavel artificial
-            addFolgaArtificial(i, contArtificial, 1, matrizArtificial, nrRestricoes);
-            contArtificial++;
-        } else if(sinalVetorB[i][0][0] == 0){   //se for <=
-            if(sinalVetorB[i][1][0] < 0){
-                //multiplicar a linha por -1
-                multiplicaLinha(i, matriz, sinalVetorB, nrVariaveis);
+    preTratamentoSimplex(matriz,sinalVetorB,matrizFolga,matrizArtificial, nrRestricoes, nrVariaveis);
 
-                //variavel de folga
-                aux = sinalVetorB[i][0][0] == 0 ? 1 : -1;
-                addFolgaArtificial(i, contFolga, aux, matrizFolga, nrRestricoes);
-                contFolga++;
+    
+    int *basicas;
+    basicas = (int*) malloc(nrRestricoes*sizeof(int));
+    int *naoBasicas;
+    int nrNaobasicas = nrVariaveis + nrFolga + nrArtificiais - nrRestricoes;
+    naoBasicas = (int*) malloc(nrNaobasicas*sizeof(int));
 
-                //variavel artificial
-                addFolgaArtificial(i, contArtificial, 1,matrizArtificial, nrRestricoes);
-                contArtificial++;
-            }else{
-                //variavel de folga
-                aux = sinalVetorB[i][0][0] == 0 ? 1 : -1;
-                addFolgaArtificial(i, contFolga, aux, matrizFolga, nrRestricoes);
-                contFolga++;
-            }
-        } else if(sinalVetorB[i][0][0] == 1){   //se for >=
-            if(sinalVetorB[i][1][0] <= 0){
-                //multiplicar a linha por -1
-                multiplicaLinha(i, matriz, sinalVetorB,nrVariaveis);
 
-                //variavel de folga
-                aux = sinalVetorB[i][0][0] == 0 ? 1 : -1;
-                addFolgaArtificial(i, contFolga, aux, matrizFolga, nrRestricoes);
-                contFolga++;
-            } else {
-                //variavel de folga
-                aux = sinalVetorB[i][0][0] == 0 ? 1 : -1;
-                addFolgaArtificial(i, contFolga, aux, matrizFolga, nrRestricoes);
-                contFolga++;
-
-                //variavel artificial
-                addFolgaArtificial(i, contArtificial, 1, matrizArtificial, nrRestricoes);
-                contArtificial++;
-            }
-        }
-    }
-    //se tiver variaveis arificiais precisa fase 1
-    //se b > 0 e sinal = '<'  ->  só folga
-    //se b > 0 e sinal = '>'  ->  folga + artificial
-    //se b < 0 e sinal = '<'  ->  multiplicar por -1 + folga + artificial
-    //se b < 0 e sinal = '>'  ->  multiplicar por -1 + folga
-    //sinal = '='  ->  artificial
+    inicializaBase(basicas,naoBasicas,nrVariaveis,nrRestricoes,nrFolga,nrArtificiais, matrizFolga, matrizArtificial);
 
     if(nrArtificiais > 0){
         faseI();
@@ -203,6 +261,16 @@ int main(){
             }
         }
         printf("\n");
+    }
+
+    printf("\n\nbase: ");
+    for(int i=0; i<nrRestricoes; i++){
+        printf("%d  ", basicas[i]);
+    }
+
+    printf("\n\nFora da base: ");
+    for(int i=0; i<nrNaobasicas; i++){
+        printf("%d  ", naoBasicas[i]);
     }
 
     printf("\n\n NrArtificiais = %d\n\n", nrArtificiais);

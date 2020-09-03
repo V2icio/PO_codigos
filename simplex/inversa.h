@@ -4,66 +4,6 @@
 
 int* teoremaLaplace(int , int*** );
 
-void incluiMatriz(int linha, int coluna, char *entrada, int*** matriz){
-    int lenght = 0;
-    int barPos = -1;
-    int signalFlag = 1;
-
-    while(entrada[lenght] != '\0'){
-        if(entrada[lenght] == '/'){
-            barPos = lenght;
-        }    
-        lenght++;
-    }
-
-    if(barPos == -1){
-        int j = 0;
-        for(int i = lenght-1; i>=0; i--, j++){
-            if(entrada[i] == '-'){
-                signalFlag = signalFlag * -1;
-                continue;
-            }
-            matriz[linha][coluna][0] +=  (entrada[i] - '0') * pow(10,j);
-        }
-    } else {
-        int j = 0;
-        for(int i = barPos-1; i>=0; i--, j++){
-            if(entrada[i] == '-'){
-                signalFlag = signalFlag * -1;
-                continue;
-            }
-            matriz[linha][coluna][0] +=  (entrada[i] - '0') * pow(10,j);
-        }
-        j=0;
-        matriz[linha][coluna][1] = 0;
-        for(int i = lenght-1; i>barPos; i--, j++){
-            if(entrada[i] == '-'){
-                signalFlag = signalFlag * -1;
-                continue;
-            }
-            matriz[linha][coluna][1] +=  (entrada[i] - '0') * pow(10,j);
-        }
-    }
-
-    matriz[linha][coluna][0] = matriz[linha][coluna][0] * signalFlag;
-}
-
-
-void imprimeMatriz(int*** matriz, int dim){
-    for(int i=0; i<dim; i++){
-        for(int j=0; j<dim; j++){
-            printf("%d",matriz[i][j][0]);
-            if(matriz[i][j][1] != 1){
-                printf("/%d\t",matriz[i][j][1]);
-            } else {
-                printf("\t");
-            }
-        }
-        printf("\n");
-    }
-}
-
-
 int gcd(int a, int b){      // Algoritmo de Euclides - maximo(maior) divisor comum
     if (b == 0) 
         return a; 
@@ -73,7 +13,6 @@ int gcd(int a, int b){      // Algoritmo de Euclides - maximo(maior) divisor com
 int lcm(int a, int b){      // Minimo multiplo comum
     return a * (b / gcd(a, b));
 }
-
 
 //Variavel fator define a operação, 1:soma    -1:subtração
 int* operaMatriz(int numeradorA, int denominadorA, int numeradorB, int denominadorB, int fator){
@@ -109,8 +48,7 @@ int* regraDeSarrus(int dim, int*** matriz){
     }
 
     for(int i=0; i<dim; i++){
-        for(int j=0;j<dim; j++)
-        {
+        for(int j=0;j<dim; j++){
             int auxI, auxJ;
             auxI = j >=3 ? j-3 : j;
             auxJ = i+j >=3 ? i+j-3 : i + j;
@@ -118,7 +56,6 @@ int* regraDeSarrus(int dim, int*** matriz){
             produto1[i][1] =  produto1[i][1] * matriz[auxI][auxJ][1];
 
             int maiorDivisor;
-
             maiorDivisor = gcd(produto1[i][0],produto1[i][1]);
 
             produto1[i][0] = produto1[i][0]/maiorDivisor;
@@ -127,8 +64,7 @@ int* regraDeSarrus(int dim, int*** matriz){
     }
 
     for(int i=dim-1; i>=0; i--){
-        for(int j=0; j<dim; j++)
-        {
+        for(int j=0; j<dim; j++){
             int auxI, auxJ;
             auxI = j >=3 ? j-3 : j;
             auxJ = (2 - j + 2 - i) >=3 ? (2 - j + 2 - i)-3 :(2 - j + 2 - i);
@@ -136,7 +72,6 @@ int* regraDeSarrus(int dim, int*** matriz){
             produto2[i][1] =  produto2[i][1] * matriz[auxI][auxJ][1];
 
             int maiorDivisor;
-
             maiorDivisor = gcd(produto2[i][0],produto2[i][1]);
 
             produto2[i][0] = produto2[i][0]/maiorDivisor;
@@ -152,7 +87,6 @@ int* regraDeSarrus(int dim, int*** matriz){
     result2 = operaMatriz(result2[0], result2[1], produto2[2][0], produto2[2][1], 1);
 
     int *determinate;
-
     determinate = operaMatriz(result1[0], result1[1], result2[0], result2[1], -1);
     
     free(result1);
@@ -177,7 +111,7 @@ int* teoremaLaplace(int dim, int*** matriz){
     determinante = (int*) malloc(2 * sizeof(int));
     determinante[0] = 0;
     determinante[1] = 1;
-    
+
     //para cada elemento da primeira linha.
     for(int i = 0; i<dim; i++){
         //matrizAux = matriz ordem n -1.
@@ -280,6 +214,7 @@ int*** calculaInversa(int dim, int*** matriz){
                     break;
                 }
                 if(j = dim-1){
+                    return NULL;
                     printf("Erro nos pivos: pivo != 0 não encontrado.");
                 }
             }
@@ -381,52 +316,18 @@ int*** calculaInversa(int dim, int*** matriz){
     return matrizDireita;
 }
 
-int main() {
-
-    int dim;
-    printf("Entre com a dimensao da matriz quadrada\n");
-    scanf("%d",&dim);
-    printf("dimensao: %d",dim);
-
-    int ***matrizInversa;
-
-    int ***matriz = (int ***)malloc(dim * sizeof(int**));
-    for(int i = 0; i < dim; i++) {
-        matriz[i] = (int **)malloc(dim * sizeof(int*));
-        for (int j = 0; j < dim; j++){
-            matriz[i][j] = (int*)malloc(2 * sizeof(int));
-        }
-    }
-
-    printf("\n\nEntre com a matriz\n");
-
-    char sAux[30];
-    for(int i=0; i<dim; i++){
-        for(int j=0; j<dim; j++){
-            matriz[i][j][0] = 0;
-            matriz[i][j][1] = 1;
-            scanf("%s",sAux);
-            incluiMatriz(i, j, sAux, matriz);
-        }
-    }
-    printf("\nMatriz:\n");
-    imprimeMatriz(matriz, dim);
-
+int*** inversa(int dim, int*** matriz){
     int *determinante;
-
     determinante = calculaDeterminante(dim,matriz);
 
-    printf("\nO determinante da matriz e: %d/%d\n", determinante[0], determinante[1]);
-
+    int ***matrizInversa;
     if(determinante[0] != 0){
         matrizInversa = calculaInversa(dim, matriz);
-        printf("\nMatriz inversa:\n");
-        imprimeMatriz(matrizInversa, dim);
+        free(determinante);
+        return matrizInversa;
     } else {
-        printf("Como o determinante = 0, a matriz nao possui inversa\n");
+        free(determinante);
+        return NULL;
     }
+}
 
-    free(determinante);
-
-    return 0;
-;}

@@ -1,10 +1,9 @@
 Código desenvolvido para a disciplina de Pesquisa Operacional.
-
-Calcular a matriz inversa de uma matriz dada.
+Calcular a solução de um dado problema utilizando o método Simplex.
 
 
 Para executar:
 
-inversa.exe < entrada.txt
+simplex.exe < entrada.txt
 
 O programa só aceita como entrada frações e números inteiros.

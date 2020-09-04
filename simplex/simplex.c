@@ -4,7 +4,6 @@
 #include "manipulaMatriz.h"
 #include "inversa.h"
 
-
 void multiplicaLinha(int i, int*** matriz, int*** sinalVetorB, int nrVariaveis){
     for(int j=0; j<nrVariaveis; j++){
         matriz[i][j][0] *=-1;
@@ -113,22 +112,6 @@ void inicializaBase(int *basicas, int *naoBasicas, int nrVariaveis,
     }
 }
 
-void liberaMatrizDim2(int **matriz, int linhas, int colunas){
-    for (int i = 0; i < linhas; i++){
-        free(matriz[i]);
-    }
-    free(matriz);
-}
-
-void liberaMatrizDim3(int ***matriz, int linhas, int colunas, int largura){
-    for (int i = 0; i < linhas; i++){
-        for (int j = 0; j < colunas; j++){
-            free(matriz[i][j]);
-        }
-        free(matriz[i]);
-    }
-    free(matriz);
-}
 
 
 int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB, int*** matrizFolga, 
@@ -725,6 +708,6 @@ int main(){
     liberaMatrizDim3(matrizArtificial,nrRestricoes, nrArtificiais, 2);
     free(basicas);
     free(naoBasicas);
-    
+
     return 0;
 }

@@ -1,5 +1,5 @@
-//#include<math.h>
-//#include<stdio.h>
+#include<math.h>
+#include<stdio.h>
 
 void incluiMatriz(int linha, int coluna, char *entrada, int*** matriz){
     int lenght = 0;

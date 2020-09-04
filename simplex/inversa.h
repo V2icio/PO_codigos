@@ -110,7 +110,6 @@ int* regraDeSarrusMenor(int dim, int*** matriz){
 
 int* calculaDeterminante(int dim, int*** matriz){
     if(dim > 3){
-        //printf("La place não implementado\n");
         return teoremaLaplace(dim, matriz);
     } else  if(dim == 3){
         return regraDeSarrus(dim,matriz);
@@ -230,7 +229,7 @@ int*** calculaInversa(int dim, int*** matriz){
                     }
                     break;
                 }
-                if(j = dim-1){
+                if(j == dim-1){
                     return NULL;
                     printf("Erro nos pivos: pivo != 0 não encontrado.");
                 }

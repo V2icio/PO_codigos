@@ -113,6 +113,23 @@ void inicializaBase(int *basicas, int *naoBasicas, int nrVariaveis,
     }
 }
 
+void liberaMatrizDim2(int **matriz, int linhas, int colunas){
+    for (int i = 0; i < linhas; i++){
+        free(matriz[i]);
+    }
+    free(matriz);
+}
+
+void liberaMatrizDim3(int ***matriz, int linhas, int colunas, int largura){
+    for (int i = 0; i < linhas; i++){
+        for (int j = 0; j < colunas; j++){
+            free(matriz[i][j]);
+        }
+        free(matriz[i]);
+    }
+    free(matriz);
+}
+
 
 int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB, int*** matrizFolga, 
            int*** matrizArtificial, int nrVariaveis, int nrRestricoes, int nrFolga, int nrArtificiais){
@@ -127,31 +144,57 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
         flagFase = 2;
     }
 
-    printf("\n\n------   FASE %d    --------\n\n", flagFase);
-
-    //loop começa aqui.
-    printf("ALOoo3");
-
-    while(1){
-        printf("\n\n------------------------\n");
-        iteracoes++;
-        printf("      Iteracao %d\n\n", iteracoes);
-        
-        printf("ALOoo2");
-
-        int ***matrizBasica = (int ***)malloc(nrRestricoes * sizeof(int**));
-        for(int i = 0; i < nrRestricoes; i++) {
-            matrizBasica[i] = (int **)malloc(nrRestricoes * sizeof(int*));
-            for (int j = 0; j < nrRestricoes; j++){
-                matrizBasica[i][j] = (int*)malloc(2 * sizeof(int));
-            }
+    int ***matrizBasica = (int ***)malloc(nrRestricoes * sizeof(int**));
+    for(int i = 0; i < nrRestricoes; i++) {
+        matrizBasica[i] = (int **)malloc(nrRestricoes * sizeof(int*));
+        for (int j = 0; j < nrRestricoes; j++){
+            matrizBasica[i][j] = (int*)malloc(2 * sizeof(int));
         }
-        printf("ALOoo1");
-        
+    }
+
+    int **X_B = (int**) malloc(nrRestricoes*sizeof(int*));
+    for (int i = 0; i < nrRestricoes; i++){
+        X_B[i] = (int*)malloc(2 * sizeof(int));
+    }
+
+    int **lambdaT = (int**) malloc(nrRestricoes*sizeof(int*));
+    for (int i = 0; i < nrRestricoes; i++){
+        lambdaT[i] = (int*)malloc(2 * sizeof(int));
+    }
+
+    int **C_b = (int**) malloc(nrRestricoes*sizeof(int*));
+    for (int i = 0; i < nrRestricoes; i++){
+        C_b[i] = (int*)malloc(2 * sizeof(int));
+    }
+
+    int **C_nb = (int**) malloc(nrNaobasicas * sizeof(int*));
+    for(int i=0; i<nrNaobasicas; i++){
+        C_nb[i] = (int*)malloc(2 * sizeof(int));
+    }
+
+    int **custosRelativos = (int**) malloc((nrArtificiais + nrFolga) *sizeof(int*));
+    for (int i = 0; i < (nrArtificiais + nrFolga); i++){
+        custosRelativos[i] = (int*)malloc(2 * sizeof(int));
+    }
+
+    int **colunaAux = (int**) malloc(nrRestricoes *sizeof(int*));
+    for (int j = 0; j < nrRestricoes; j++){
+        colunaAux[j] = (int*)malloc(2 * sizeof(int));
+    }
+
+    int **direcaoSimplex = (int**) malloc(nrRestricoes *sizeof(int*));
+    for (int i = 0; i < nrRestricoes; i++){
+        direcaoSimplex[i] = (int*)malloc(2 * sizeof(int));
+    }
+
+    printf("\n\n------   FASE %d    --------\n", flagFase);
+    while(1){
+        iteracoes++;
+        printf("------------------------\n");
+        printf("      Iteracao %d\n\n", iteracoes);
 
         int *aux2;
         int aux[2];
-
         for(int i=0; i<nrRestricoes; i++){
             for(int j=0; j<nrRestricoes; j++){
                 if(basicas[i] >= nrVariaveis + nrFolga){
@@ -168,20 +211,17 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
                 }
             }
         }
+        printf("Matriz basica:\n");
+        imprimeMatriz(matrizBasica,nrRestricoes);
+        printf("\n");
 
         int ***matrizBasicaInversa = inversa(nrRestricoes, matrizBasica);
 
-        printf("Matriz basica inversa:\n\n");
-
+        printf("Matriz basica inversa:\n");
         imprimeMatriz(matrizBasicaInversa, nrRestricoes);
         printf("\n");
 
         //Calculo do X_B = B^-1 * b
-        int **X_B = (int**) malloc(nrRestricoes*sizeof(int*));
-        for (int i = 0; i < nrRestricoes; i++){
-            X_B[i] = (int*)malloc(2 * sizeof(int));
-        }
-
         for(int i=0 ; i<nrRestricoes; i++){
             X_B[i][0] = 0;
             X_B[i][1] = 1;
@@ -193,6 +233,7 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
 
                 X_B[i][0] = aux2[0];
                 X_B[i][1] = aux2[1];
+                free(aux2);
             }
         }
         
@@ -209,16 +250,6 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
         
 
         //Calculo do lambda^T = C_b * B^-1
-        int **lambdaT = (int**) malloc(nrRestricoes*sizeof(int*));
-        for (int i = 0; i < nrRestricoes; i++){
-            lambdaT[i] = (int*)malloc(2 * sizeof(int));
-        }
-
-        int **C_b = (int**) malloc(nrRestricoes*sizeof(int*));
-        for (int i = 0; i < nrRestricoes; i++){
-            C_b[i] = (int*)malloc(2 * sizeof(int));
-        }
-
         for(int i=0; i< nrRestricoes; i++){
             if(basicas[i] >= nrVariaveis + nrFolga){
                 //valor = 1 na fase I e valor = 0 na fase II
@@ -260,6 +291,7 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
 
                 lambdaT[i][0] = aux2[0];
                 lambdaT[i][1] = aux2[1];
+                free(aux2);
             }
         }
 
@@ -275,13 +307,6 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
         printf("\n");
         
         //Pegar os custos das variaveis não basicas
-        int **C_nb = (int**) malloc(nrNaobasicas * sizeof(int*));
-        for(int i=0; i<nrNaobasicas; i++){
-            C_nb[i] = (int*)malloc(2 * sizeof(int));
-            C_nb[i][0] = 0;
-            C_nb[i][1] = 1;
-        }
-
         for(int i=0; i < nrNaobasicas; i++){
             if(naoBasicas[i] >= (nrVariaveis + nrFolga)){
                 //valor = 1 na fase I e valor = 0 na fase II
@@ -300,39 +325,24 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
                     C_nb[i][0] = matriz[nrRestricoes][naoBasicas[i]][0];
                     C_nb[i][1] = matriz[nrRestricoes][naoBasicas[i]][1];
                 }
-                
-                //C_b[i] = matriz[nrVariaveis][basicas[i]];
             }
         }
 
         printf("Custo nao basicas:   ");
-        for (int i = 0; i < nrNaobasicas; i++)
-        {
+        for (int i = 0; i < nrNaobasicas; i++){
             printf("%d  ", C_nb[i][0]);
         }
         printf("\n");
-
+        
         //calcular o custo relativo das variaveis não basicas
-        int **custosRelativos = (int**) malloc((nrArtificiais + nrFolga) *sizeof(int*));
-        for (int i = 0; i < (nrArtificiais + nrFolga); i++){
-            custosRelativos[i] = (int*)malloc(2 * sizeof(int));
-        }
-
         int posiMenorCustoRelativo;
         double menorCustoRelativo = INFINITY;
-
         for(int i=0; i < (nrArtificiais + nrVariaveis); i++){
             if(naoBasicas[i] >= (nrVariaveis + nrFolga) && flagFase == 2){
                 //Não considerar as variaveis artificiais, se existirem.
                 continue;
             }
-
             //Custo relativo_i = custo_i - lambdaT*coluna
-            int **colunaAux = (int**) malloc(nrRestricoes *sizeof(int*));
-            for (int j = 0; j < nrRestricoes; j++){
-                colunaAux[j] = (int*)malloc(2 * sizeof(int));
-            }
-
             for (int j = 0; j < nrRestricoes; j++){
                 if(naoBasicas[i] >= nrVariaveis + nrFolga){
                     //procurar o valor nas variaveis artificiais
@@ -347,20 +357,20 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
                     colunaAux[j][1] = matriz[j][naoBasicas[i]][1];
                 }            
             }
-
             custosRelativos[i][0] = 0;
             custosRelativos[i][1] = 1;
-
             for (int j = 0; j < nrRestricoes; j++){
                 aux[0] = lambdaT[j][0]*colunaAux[j][0];
                 aux[1] = lambdaT[j][1]*colunaAux[j][1];
                 aux2 = operaMatriz(aux[0],aux[1], custosRelativos[i][0], custosRelativos[i][1], 1);
                 custosRelativos[i][0] = aux2[0];
                 custosRelativos[i][1] = aux2[1];
+                free(aux2);
             }
             aux2 = operaMatriz(C_nb[i][0], C_nb[i][1], custosRelativos[i][0], custosRelativos[i][1], -1);      
             custosRelativos[i][0] = aux2[0];
             custosRelativos[i][1] = aux2[1];
+            free(aux2);
 
             if(custosRelativos[i][0] != 0 && custosRelativos[i][1] != 0){
                 if(menorCustoRelativo > ((double)custosRelativos[i][0]/(double)custosRelativos[i][1])){
@@ -368,9 +378,6 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
                     posiMenorCustoRelativo = i;
                 }
             }
-            
-
-            free(colunaAux);
         }
         printf("Custos relativos:   ");
         for(int i=0; i<(nrArtificiais + nrVariaveis); i++){
@@ -385,6 +392,14 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
         if(menorCustoRelativo > 0.0){
             if(flagFase == 2){
                 printf("solucao ótima");
+                liberaMatrizDim3(matrizBasica,nrRestricoes,nrRestricoes,2);
+                liberaMatrizDim3(matrizBasicaInversa,nrRestricoes,nrRestricoes,2);
+                liberaMatrizDim2(lambdaT,nrRestricoes,2);
+                liberaMatrizDim2(C_b,nrRestricoes,2);
+                liberaMatrizDim2(C_nb,nrNaobasicas,2);
+                liberaMatrizDim2(custosRelativos,nrArtificiais + nrFolga,2);
+                liberaMatrizDim2(colunaAux,nrRestricoes,2);
+                liberaMatrizDim2(direcaoSimplex,nrRestricoes,2);
                 return X_B;
             } else {
                 //se tiver na fase I e não tiver variaveis artificiais na base -> fase II
@@ -392,6 +407,15 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
                 for(int i=0; i<nrRestricoes; i++){
                     if(basicas[i] >= nrVariaveis + nrFolga){
                         printf("problema sem solução 1");
+                        liberaMatrizDim2(X_B,nrRestricoes,2);
+                        liberaMatrizDim3(matrizBasica,nrRestricoes,nrRestricoes,2);
+                        liberaMatrizDim3(matrizBasicaInversa,nrRestricoes,nrRestricoes,2);
+                        liberaMatrizDim2(lambdaT,nrRestricoes,2);
+                        liberaMatrizDim2(C_b,nrRestricoes,2);
+                        liberaMatrizDim2(C_nb,nrNaobasicas,2);
+                        liberaMatrizDim2(custosRelativos,nrArtificiais + nrFolga,2);
+                        liberaMatrizDim2(colunaAux,nrRestricoes,2);
+                        liberaMatrizDim2(direcaoSimplex,nrRestricoes,2);
                         return NULL;
                     }
                 }
@@ -401,16 +425,6 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
         }
 
         //calcular o Y = B^-1 * a(posiMenorCustoRelativo) = direção simplex
-        int **direcaoSimplex = (int**) malloc(nrRestricoes *sizeof(int*));
-        for (int i = 0; i < nrRestricoes; i++){
-            direcaoSimplex[i] = (int*)malloc(2 * sizeof(int));
-        }
-
-        int **colunaAux = (int**) malloc(nrRestricoes *sizeof(int*));
-        for (int i = 0; i < nrRestricoes; i++){
-            colunaAux[i] = (int*)malloc(2 * sizeof(int));
-        }
-
         for (int j = 0; j < nrRestricoes; j++){
             if(naoBasicas[posiMenorCustoRelativo] >= nrVariaveis + nrFolga){
                 //procurar o valor nas variaveis artificiais
@@ -429,7 +443,6 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
         double menorPasso = INFINITY;
         int posiMenorPasso;
         double auxDouble;
-        printf("\n");
         for (int i = 0; i < nrRestricoes; i++){
             direcaoSimplex[i][0] = 0;
             direcaoSimplex[i][1] = 1;
@@ -439,19 +452,19 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
                 aux2 = operaMatriz(aux[0],aux[1],direcaoSimplex[i][0],direcaoSimplex[i][1], 1);
                 direcaoSimplex[i][0] = aux2[0];
                 direcaoSimplex[i][1] = aux2[1];
+                free(aux2);
             }
             auxDouble = (double)direcaoSimplex[i][0]/(double)direcaoSimplex[i][1];
-            //printf("%d/%d = %lf     ",direcaoSimplex[i][0],direcaoSimplex[i][1],auxDouble);
             if(auxDouble > 0){
-                auxDouble = ((double)X_B[i][0]*(double)direcaoSimplex[i][1])/((double)X_B[i][1]*(double)direcaoSimplex[i][0]);
-                printf("%lf   ", auxDouble);
-                if(menorPasso > auxDouble){
+                auxDouble = (double)((double)X_B[i][0]*(double)direcaoSimplex[i][1])/
+                            (double)((double)X_B[i][1]*(double)direcaoSimplex[i][0]);
+                if(menorPasso == INFINITY || menorPasso > auxDouble){
                     menorPasso = auxDouble;
                     posiMenorPasso = i;
                 }
             }
         }
-        printf("Direcao simplex:  ");
+        printf("\nDirecao simplex:  ");
         for(int i=0; i<nrRestricoes; i++){
             printf("%d", direcaoSimplex[i][0]);
             if(direcaoSimplex[i][1] != 1){
@@ -461,26 +474,22 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
         }
         printf("\n");
 
-        printf("\n");
         if(menorPasso == INFINITY){
             printf("problema sem solução 2");
+            liberaMatrizDim2(X_B,nrRestricoes,2);
+            liberaMatrizDim3(matrizBasica,nrRestricoes,nrRestricoes,2);
+            liberaMatrizDim3(matrizBasicaInversa,nrRestricoes,nrRestricoes,2);
+            liberaMatrizDim2(lambdaT,nrRestricoes,2);
+            liberaMatrizDim2(C_b,nrRestricoes,2);
+            liberaMatrizDim2(C_nb,nrNaobasicas,2);
+            liberaMatrizDim2(custosRelativos,nrArtificiais + nrFolga,2);
+            liberaMatrizDim2(colunaAux,nrRestricoes,2);
+            liberaMatrizDim2(direcaoSimplex,nrRestricoes,2);
             return NULL;
-        }
-        printf("\n\ncoluna Aux: ");
-        for (int i = 0; i < nrRestricoes; i++)
-        {
-            printf("%d",colunaAux[i][0]);
-            if(colunaAux[i][1] != 1){
-                printf("/%d",colunaAux[i][1]);
-            }
-            printf("  ");
-        }
-        printf("\n");
-        
+        }        
 
-        printf("\n%d sai da base\n\n",basicas[posiMenorPasso]);
-
-        printf("%d entra na base\n\n",naoBasicas[posiMenorCustoRelativo]);
+        printf("\n%d sai da base\n",basicas[posiMenorPasso]);
+        printf("%d entra na base\n",naoBasicas[posiMenorCustoRelativo]);
 
         aux[0] = basicas[posiMenorPasso];
         basicas[posiMenorPasso] = naoBasicas[posiMenorCustoRelativo];
@@ -499,6 +508,7 @@ int ** faseI_II(int *basicas, int *naoBasicas, int*** matriz, int*** sinalVetorB
                 printf("\n-----   FASE-II   -----\n");
             }
         }
+        liberaMatrizDim3(matrizBasicaInversa,nrRestricoes,nrRestricoes,2);
     }
 }
 
@@ -618,12 +628,17 @@ int main(){
     printf("\n\nMatriz:\t\tsinal e B\tFolga\t\tArtificial\n");
     for(int i=0; i<=nrRestricoes; i++){
         for(int j=0; j<nrVariaveis; j++){
-            printf("%d/%d  ", matriz[i][j][0],matriz[i][j][1]);
+            printf("%d", matriz[i][j][0]);
+            if(matriz[i][j][1] != 1){
+                printf("/%d  " ,matriz[i][j][1]);
+            }else{
+                printf("  ");
+            }
         }
         if(i != nrRestricoes){
             printf("\t\t");
             for(int j=0; j<2; j++){
-                printf("%d/%d  ", sinalVetorB[i][j][0],sinalVetorB[i][j][1]);
+                printf("%d  ", sinalVetorB[i][j][0]);
             }
             printf("\t\t");
             for(int j=0; j<nrFolga; j++){
@@ -692,9 +707,9 @@ int main(){
         }
 
         printf("\nNao basicas:\n");
-        for(int i=0; i< nrVariaveis + nrArtificiais; i++){
+        for(int i=0; i < nrVariaveis + nrArtificiais; i++){
             if(naoBasicas[i] >= nrVariaveis + nrFolga){
-                i++;
+                continue;
                 //Não printar as artificiais.
             } else {
                 printf("X%d = %d\n", naoBasicas[i]+1, 0);

@@ -161,12 +161,28 @@ int* regraDeSarrus(int dim, int*** matriz){
     return determinate;
 }
 
+int* regraDeSarrusMenor(int dim, int*** matriz){
+    int aux1[2];
+    int aux2[2];
+    
+    aux1[0] = matriz[0][0][0] * matriz[1][1][0];
+    aux1[1] = matriz[0][0][1] * matriz[1][1][1];
+
+    aux2[0] = matriz[1][0][0] * matriz[0][1][0];
+    aux2[1] = matriz[1][0][1] * matriz[0][1][1];
+
+    return operaMatriz(aux1[0], aux1[1], aux2[0], aux2[1], -1);
+}
+
 int* calculaDeterminante(int dim, int*** matriz){
     if(dim > 3){
-        //printf("La place não implementado\n");
         return teoremaLaplace(dim, matriz);
-    } else {
+    } else  if(dim == 3){
         return regraDeSarrus(dim,matriz);
+    } else if(dim == 2){
+        return regraDeSarrusMenor(dim, matriz);
+    } else {
+        return operaMatriz(matriz[0][0][0],matriz[0][0][1],0,1,1);
     }
 }
 
@@ -279,7 +295,7 @@ int*** calculaInversa(int dim, int*** matriz){
                     }
                     break;
                 }
-                if(j = dim-1){
+                if(j == dim-1){
                     printf("Erro nos pivos: pivo != 0 não encontrado.");
                 }
             }

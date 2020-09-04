@@ -606,14 +606,15 @@ int main(){
     //Guarda os valores de variaveis artificiais.
     int ***matrizArtificial = (int ***)malloc((nrRestricoes) * sizeof(int**));
     for(int i = 0; i < (nrRestricoes); i++) {
-        matrizArtificial[i] = (int **)malloc(nrArtificiais * sizeof(int*));
-        for (int j = 0; j < nrArtificiais; j++){
-            matrizArtificial[i][j] = (int*)malloc(2 * sizeof(int));
-        }
+        if(nrArtificiais > 0){
+            matrizArtificial[i] = (int **)malloc(nrArtificiais * sizeof(int*));
+            for (int j = 0; j < nrArtificiais; j++){
+                matrizArtificial[i][j] = (int*)malloc(2 * sizeof(int));
+            }
+        }  
     }
 
     preTratamentoSimplex(matriz,sinalVetorB,matrizFolga,matrizArtificial, nrRestricoes, nrVariaveis);
-
     
     int *basicas;
     basicas = (int*) malloc(nrRestricoes*sizeof(int));
@@ -716,6 +717,14 @@ int main(){
             }
         }
         printf("\n\n");
+        liberaMatrizDim2(retorno, nrRestricoes, 2);
     }
+    liberaMatrizDim3(matriz,nrRestricoes+1, nrVariaveis, 2);
+    liberaMatrizDim3(sinalVetorB, nrRestricoes, 2, 2);
+    liberaMatrizDim3(matrizFolga, nrRestricoes, nrFolga, 2);
+    liberaMatrizDim3(matrizArtificial,nrRestricoes, nrArtificiais, 2);
+    free(basicas);
+    free(naoBasicas);
+    
     return 0;
 }
